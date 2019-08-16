@@ -1,0 +1,238 @@
+{{ define "scope_error.tmpl" }}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width,initial-scale=1,user-scalable=0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <title>授权失败</title>
+	<link rel="stylesheet" href="https://res.wx.qq.com/open/libs/weui/1.1.3/weui.min.css"/>
+    <style>
+        *{
+            margin: 0;
+            padding: 0;
+        }
+        body{
+            width: 100%;
+            height: 100%;
+        }
+        .main{
+            width:100%;
+            height: 100%;
+        }
+        .loading{
+		  width:100%; 
+		  height: 100%;
+		  position: fixed;
+		  top:0;
+		  left: 0;
+		  z-index: 100;
+		  background: #ffffff;
+		}
+		.loading .pic{
+		  width: 50px;
+		  height: 64px;
+		  text-align: center;
+		  /* background: url(images/loading.gif); */
+		  position: absolute;
+		  top: 0;
+		  bottom: 0;
+		  left:0;
+		  right:0;
+		  margin: auto;
+		}
+		
+		.loading .pic_text{
+		  width: 80px;
+		  height: 30px;
+		  text-align: center;
+		  color: #399;
+		  font-size: 16px;
+		  position: absolute;
+		  top: 64px;
+		  bottom: 0;
+		  left:0;
+		  right:0;
+		  margin: auto;
+		}
+		
+		.loading .pic i{
+		  display: block;
+		  float: left;
+		  width: 6px;
+		  height: 50px;
+		  background: #399;
+		  margin: 0 2px;
+		  transform: scaleY(0.4);
+		  animation: load 1.2s infinite;
+		}
+		.loading .pic i:nth-child(1){animation-delay:0.1s }
+		.loading .pic i:nth-child(2){animation-delay:0.2s }
+		.loading .pic i:nth-child(3){animation-delay:0.3s }
+		.loading .pic i:nth-child(4){animation-delay:0.4s }
+		.loading .pic i:nth-child(5){animation-delay:0.5s }
+		
+		@keyframes load{
+		    0%,40%,100%{transform: scaleY(0.4)}
+		    20%{transform:scaleY(1) }
+		}
+		
+		.show{
+			display:block;
+		}
+		.hide{
+			display:none;
+		}
+    </style>
+</head>
+<body>
+<div class="main">
+	<div class="weui-msg">
+	    <div class="weui-msg__icon-area"><i class="weui-icon-success weui-icon_msg"></i></div>
+	    <div class="weui-msg__text-area">
+	        <h2 class="weui-msg__title">授权失败</h2>
+	        <p class="weui-msg__desc">{{.msg}}</p>
+	    </div>
+	    <div class="weui-msg__opr-area">
+	        <p class="weui-btn-area">
+	            <a href="javascript:history.back();" class="weui-btn weui-btn_primary">推荐操作</a>
+	            <a href="javascript:history.back();" class="weui-btn weui-btn_default">辅助操作</a>
+	        </p>
+	    </div>
+	    <div class="weui-msg__extra-area">
+	        <div class="weui-footer">
+	            <p class="weui-footer__links">
+	                <a href="javascript:void(0);" class="weui-footer__link">底部链接文本</a>
+	            </p>
+	            <p class="weui-footer__text">Copyright &copy; 2008-2016 weui.io</p>
+	        </div>
+	    </div>
+	</div>
+</div>
+<script src="https://libs.baidu.com/jquery/2.0.0/jquery.min.js"></script>
+<script src="https://res.wx.qq.com/open/js/jweixin-1.4.0.js"></script>
+<script>
+	//获取get参数
+	function getQueryParam(name) {
+		var query = window.location.search.substring(1);
+		var vars = query.split("&");
+		for (var i=0;i<vars.length;i++) {
+			var pair = vars[i].split("=");
+			if(pair[0] == name){
+				return pair[1];
+			}
+		}
+		return false;
+	}
+	//设置sessionStorage
+	function setSessionItem(name,data){
+		sessionStorage.setItem(name,data)
+		return true;
+	}
+	//获取sessionStorage
+	function getSessionItem(name){
+		return sessionStorage.getItem(name)
+	}
+	//设置localStorage
+	function setLocalItem(name,data,time){
+		//失效时间戳
+		var timestamp = Date.parse(new Date());
+		if (time===undefined){
+			time = 3600*24;
+		}
+		time = time*1000+timestamp;
+		//保存名前缀
+		name = this.getStorePrefix()+name;
+		var item = {
+			data:data,
+			expires_at:time
+		};
+		localStorage.setItem(name,JSON.stringify(item));
+		return true;
+	}
+	//获取localStorage
+	function getLocalItem(name){
+		name = this.getStorePrefix()+name;
+		var item = localStorage.getItem(name);
+		if (!item){
+			return false;
+		}
+		var data = JSON.parse(item);
+		if  (data.expires_at<this.getTimeStamp()){
+			localStorage.removeItem(name);
+			return false;
+		}
+		return data.data;
+	}
+	//显示错误页面
+	function showError(msg){
+		
+	}
+	//跳转至授权地址
+	function getAuthorURI(){
+		var num = getSessionItem(num)
+		if(!num){
+			num = 1;
+		}else{
+			num++
+		}
+		if(num>3){
+			showError("授权失败，请重新打开网页");
+			return
+		}
+		setSessionItem("num",num)
+		$.ajax({
+	        type:"get",
+	        url:"/wx/author/"+uid,
+	        data:{
+	            url:window.location.href
+	        },
+	        dataType:"json",
+	        success:(data,textStatus)=>{
+				console.log(data);
+	            if (data.code==0){
+					location.href = data.data.snsapi	
+				}else{
+					showError(data.msg)
+				}
+	
+	        }
+	    });
+	}
+	//根据code获取用户信息
+	function getUserInfoByCode(uid,code){
+		$.ajax({
+	        type:"post",
+	        url:"/wx/user/page/"+uid,
+	        data:{
+	            code:code
+	        },
+	        dataType:"json",
+	        success:(data,textStatus)=>{
+				console.log(data);
+				if(data.code==0){
+					setLocalItem("openid",data.openid)
+				}else{
+					showError(data.msg)
+				}
+	        }
+	    });
+	}
+	//判断是否经过授权--是否有code参数
+	var code = getQueryParam("code");
+    var uid = {{ .uid }};//state就是uid
+	console.log(code,uid);
+	if(code){
+		//根据code和uid获取用户信息--获取是否重新授权[失败三次则停止授权并返回错误信息]
+		//getUserInfoByCode(uid,code)
+	}else{
+		//获取授权地址并跳转
+		//getAuthorURI();
+	}
+	console.log(window.location.origin)
+    //获取jssdk配置
+    
+</script>
+</body>
+</html>
+{{ end }}
