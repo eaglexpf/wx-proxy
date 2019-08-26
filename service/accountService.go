@@ -1,7 +1,7 @@
 package service
 
 import (
-	"fmt"
+	//	"fmt"
 
 	"math"
 
@@ -37,7 +37,7 @@ func (this *AccountService) GetInfoByAppID(app_id string) (model.WxConfig, error
 	//	data := model.WxConfig{}
 	db := database.DB
 	data := this.AccountModel
-	fmt.Println(data, this.AccountModel)
+	//	fmt.Println(data, this.AccountModel)
 	err := db.Where("app_id=? and is_delete=0", app_id).Find(&data).Error
 	return data, err
 }

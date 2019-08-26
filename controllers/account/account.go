@@ -14,7 +14,7 @@ type AccountController struct {
 }
 
 func (this *AccountController) Register(router *gin.Engine) {
-	accountGroup := router.Group("/admin/account")
+	accountGroup := router.Group("/wx/account")
 	{
 		//获取所有的账号列表
 		accountGroup.GET("/", this.GetList)

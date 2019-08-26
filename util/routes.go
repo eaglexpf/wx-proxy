@@ -40,6 +40,7 @@ func registerRouter(router *gin.Engine) {
 	new(account.AccessTokenController).Register(router)
 	new(scope.ScopeController).Register(router)
 	new(user.UserController).Register(router)
+	new(account.JsTicketController).Register(router)
 }
 
 func NotFound() gin.HandlerFunc {

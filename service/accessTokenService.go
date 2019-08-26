@@ -8,7 +8,9 @@ import (
 	"time"
 
 	"github.com/eaglexpf/wx-proxy/model"
+	//	"github.com/eaglexpf/wx-proxy/util/crypto"
 	wxhttp "github.com/eaglexpf/wx-proxy/util/http"
+	//	"github.com/satori/go.uuid"
 )
 
 type AccessTokenService struct {
